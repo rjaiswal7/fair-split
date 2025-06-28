@@ -1,2 +1,3 @@
-# fair-split
+# Fair Split
+<h4>Bill drama? Split it with us!</h4>
 A simple but effective bill splitter tool for you and your friends...
