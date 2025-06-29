@@ -388,10 +388,15 @@ function generate_bill_summary(bill_name) {
                 payor.splice(0, 1);//payer removed
 
                 //if payor amount  > receiver amount =>full amount is paid to receiver and receiver is removed
-            } else if (payor[0][1] >= receiver[0][1]) {
+            } else if (payor[0][1] > receiver[0][1]) {
                 summary.push([payor[0][0], receiver[0][1], receiver[0][0]]);
                 paid_total_amount -= receiver[0][1];
                 payor[0][1] -= receiver[0][1];
+                receiver.splice(0, 1);
+            } else if (payor[0][1] == receiver[0][1]) {
+                summary.push([payor[0][0], receiver[0][1], receiver[0][0]]);
+                paid_total_amount -= receiver[0][1];
+                payor.splice(0, 1);
                 receiver.splice(0, 1);
             }
         }
