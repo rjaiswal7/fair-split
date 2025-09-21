@@ -163,7 +163,7 @@ button.close-btn {
 }
 
 .payment-list {
-    background-color: #8BC34A;
+    background-color: #4CAF50;
     color: white;
     padding: 0px 12px;
     border-radius: 12px;
@@ -209,3 +209,4 @@ button.close-btn:hover {
 .dialogue-box{
     margin-top: calc(50vh - 100px);
 }
+
