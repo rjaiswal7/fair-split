@@ -1,5 +1,5 @@
 :root {
-    --body-bg-color: #F3E5F5;
+    --body-bg-color: #FFF8E1;
     --head-bg-color: #590d82;
     --content-bg-color: white;
     --text-color-1: #15141D;
@@ -28,7 +28,7 @@ body {
 }
 
 div.body_header {
-    background-color: var(--head-bg-color);
+    background-color: #FFC107;
     top: 0px;
     position: sticky;
     box-shadow: 0px 1px 5px 0px #cac0de;
