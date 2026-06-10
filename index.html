@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fair Split</title>
     <link rel="stylesheet" href="design.css">
+    <link rel="stylesheet" href="share.css">
 </head>
-<script src="db_manage.js"></script>
+<script src="db_manage.js?v=2"></script>
 
 <body>
     <div class="container">
         <!-- header for every page divs -->
         <div class="body_header">
-            <img src="logo.png" alt="BHAIBILL" id="header_svg">
-            <!-- <svg id="header_svg" viewBox="0 0 369.5454545454545 92.74471016002249" height="92.74471016002249"
+            <svg id="header_svg" viewBox="0 0 369.5454545454545 92.74471016002249" height="92.74471016002249"
                 width="369.5454545454545">
                 <defs id="SvgjsDefs1492"></defs>
                 <g id="SvgjsG1493" featurekey="symbolFeature-0"
@@ -61,85 +61,98 @@
                     </path>
                 </g>
                 <text x="103" y="80" font-size="19" fill="#ffffff">Dividing bills, uniting friends.</text>
-            </svg> -->
+            </svg>
             <!-- <h1>Bill Splitter</h1> -->
         </div>
         <!-- Home page tab -->
         <div class="page" style="display: block;" id="bill_page">
-            <div class="body-content">
-                <!-- <div class="content-header"> -->
-                <button id="new_bill_btn" class="right short">+</button>
-                <h2>Bills</h2>
-                <!-- </div> -->
-                <div class="table-container">
-                    <table id="info_table">
-
-                    </table>
-                </div>
+            <div class="page-header home-header">
+                <h1>Bills</h1>
+                <button id="new_bill_btn" class="short" title="New Bill">+</button>
             </div>
+            <div id="bill_container">
+                <div class="bills-col" id="bill-container-left-col"></div>
+                <div class="bills-col" id="bill-container-right-col"></div>
+            </div>
+
         </div>
         <!-- page tab for creating new bill -->
         <div class="page" id="new_bill_page">
+            <div class="page-header small-box">
+                <h1>New Bill</h1>
+                <button id="close_new_bill_btn" class="right short close-btn" title="close">X</button>
+            </div>
             <div class="body-content small-box" id="new_bill_name_tab">
-                <button id="close_new_bill_btn" class="right short close-btn">X</button>
-                <h3>Bill Details</h3>
-                <ul>
-                    <li>Bill Name</li>
-                    <li><input type="text" id="new_bill_name" placeholder="Ex: Goa Tour" /></li>
-                    <li>Total Members </li>
-                    <li><button class="range-btn" id="total_members_decrease"> - </button>
+                <div class="inputs-list">
+                    <div class="text-input-wrapper">
+                        <label for="new_bill_name">Bill Name</label>
+                        <input type="text" id="new_bill_name" name="new_bill_name" placeholder="Ex: Goa Tour" />
+                    </div>
+                    <div class="text-input-wrapper">
+                        <label for="total_members_decrease">Total Members</label>
+                        <button class="range-btn" id="total_members_decrease" title="decrease"> - </button>
                         <input type="number" id="bill_total_members" value="2" readonly>
-                        <button class="range-btn" id="total_members_increase"> + </button>
-                    </li>
-                    <li></li>
-                </ul>
-                <h3>Member names</h3>
-                <div id="bill_members_inputs">
-                    <ul>
-                        <li>Member 1 <input type="text"></li>
-                        <li>Member 2 <input type="text"></li>
-                    </ul>
+                        <button class="range-btn" id="total_members_increase" title="increase"> + </button>
+                    </div>
                 </div>
-                <p class="error" id="new_bill_error"></p>
-                <button class="right" id="new_bill_view_btn">Save & Next</button>
+                <h3>Member names</h3>
+                <div id="bill_members_inputs" class="inputs-list">
+                    <div class="text-input-wrapper">
+                        <label>Member 1</label>
+                        <input type="text">
+                    </div>
+                    <div class="text-input-wrapper">
+                        <label>Member 2</label>
+                        <input type="text">
+                    </div>
+
+                </div>
+                <button class="right" id="new_bill_view_btn" title="Create Bill">Save & Next</button>
             </div>
         </div>
         <!-- page tab for showing bill details -->
         <div class="page" id="bill_view_page">
-            <div class="body-content">
-                <button id="close_bill_view_btn" class="right short close-btn">X</button>
-                <h2 id="bill_view_name"></h2>
-                <h3>New Expense</h3>
-                <label for="bill_record_name">Expense Name: </label>
-                <input type="text" id="bill_record_name" name="bill_record_name" placeholder="Ex: Dinner">
-                <div id="bill_record_inputs">
-                </div>
-                <p class="error" id="new_expense_error"></p>
-                <button id="new_expense_btn" type="button">Add Expense</button>
+            <div class="page-header">
+                <h1 id="bill_view_name"></h1>
+                <button id="close_bill_view_btn" class="right short close-btn" title="Close Bill Details">X</button>
             </div>
-            <div class="body-content">
-                <h2>Member Record</h2>
-                <div class="table-container">
-                    <table id="member_record_table"></table>
+            <div class="bill-view-page-content">
+                <div class="body-content">
+                    <h3>New Expense</h3>
+                    <label for="bill_record_name">Expense Name: </label>
+                    <input type="text" id="bill_record_name" name="bill_record_name" placeholder="Ex: Dinner">
+                    <div id="bill_record_inputs">
+
+                    </div>
+                    <button id="new_expense_btn" type="button" title="Add Expense">Add Expense</button>
                 </div>
-                <h2>Expense Record</h2>
-                <div class="table-container">
-                    <table id="expense_record_table"></table>
+                <div class="body-content">
+                    <h2>Member Record</h2>
+                    <div class="table-container">
+                        <table id="member_record_table"></table>
+                    </div>
+                    <h2>Expense Record</h2>
+                    <div class="table-container">
+                        <table id="expense_record_table"></table>
+                    </div>
                 </div>
             </div>
+
         </div>
 
     </div>
     <div class="modal" id="delete_modal">
         <div class="body-content small-box dialogue-box">
             <p class="error"><strong>Do you really want to delete this bill!</strong></p>
-            <p><button data-bill_name="DEMO" id="bill_delete_cancel">Cancel</button>
-                <button class="close-btn" data-bill_name="" id="bill_delete_confirm">Delete</button>
+            <p><button data-bill_name="DEMO" id="bill_delete_cancel" title="Cancel Bill deletion">Cancel</button>
+                <button class="close-btn" data-bill_name="" id="bill_delete_confirm" title="Delete bill">Delete</button>
             </p>
         </div>
     </div>
+    <div id="toast-container"></div>
 </body>
-<script src="controls.js"></script>
+<script src="controls.js?v=2"></script>
+<script src="html2canvas.min.js"></script>
+<script src="share.js"></script>
 
 </html>
-

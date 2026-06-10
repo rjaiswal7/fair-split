@@ -15,7 +15,7 @@ document.getElementById("close_new_bill_btn").addEventListener("click", () => { 
 document.getElementById("close_bill_view_btn").addEventListener("click", () => { show_page("bill_page") });
 
 //eventlistener for options in bill table
-document.getElementById("info_table").addEventListener("click", check_info_table_options);
+document.getElementById("bill_container").addEventListener("click", check_bill_container_options);
 
 //eventlisteners for options in expense record table
 document.getElementById("expense_record_table").addEventListener("click", check_record_table_options);
@@ -33,23 +33,28 @@ document.getElementById("total_members_decrease").onclick = () => {
     let total_member = document.getElementById("bill_total_members");
     if (total_member.valueAsNumber > 2) {
         total_member.value = total_member.valueAsNumber - 1;
-        document.getElementById("bill_members_inputs").firstElementChild.lastElementChild.remove();
+        document.getElementById("bill_members_inputs").lastElementChild.remove();
     } else {
         total_member.value = "2";
+        showToast("Minimum 2 members required!", "error");
     }
 }
 document.getElementById("total_members_increase").onclick = () => {
     let total_member = document.getElementById("bill_total_members");
     if (total_member.valueAsNumber < 50) {
         total_member.value = total_member.valueAsNumber + 1;
-        const li = document.createElement("li");
+        const input_wrapper = document.createElement("div");
+        input_wrapper.classList.add("text-input-wrapper");
         const input = document.createElement("input");
+        const label = document.createElement("label");
         input.type = "text";
         const text = document.createTextNode(`Member ${total_member.valueAsNumber} `);
-        li.append(text, input)
-        document.getElementById("bill_members_inputs").firstElementChild.appendChild(li);
+        label.append(text);
+        input_wrapper.append(label, input);
+        document.getElementById("bill_members_inputs").appendChild(input_wrapper);
     } else {
         total_member.value = "50";
+        showToast("Maximum can be 50 members!", "error");
     }
 }
 
@@ -74,19 +79,20 @@ document.getElementById("new_bill_view_btn").onclick = () => {
     const has_duplicate_names = (new Set(member_names)).size !== member_names.length;
 
     if (bill_name == "") {
-        document.getElementById("new_bill_error").innerText = "Bill name is Empty! or Invalid";
+        showToast("Bill name is Empty! or Invalid", "error");
 
-    } else if (check_name_exists("info_table", bill_name)) {
-        document.getElementById("new_bill_error").innerText = "Bill name already Exists!";
 
+    } else if (check_bill_exists("bill_container", bill_name)) {
+        showToast("Bill name already Exists!", "error");
     } else if (!inputs_filled) {
-        document.getElementById("new_bill_error").innerText = "Member name is Empty! or Invalid";
+        showToast("Member name is Empty! or Invalid", "error");
 
     } else if (has_duplicate_names) {
-        document.getElementById("new_bill_error").innerText = "Members name can't Same!";
+        showToast("Members name can't Same!", "error");
     } else {
         generate_new_bill(bill_name, member_names);
         clear_new_bill_page();
+        //showToast("New Bill Added");
     }
 
 }
@@ -99,45 +105,123 @@ document.getElementById("new_expense_btn").onclick = () => {
     const bill_name = document.getElementById("bill_view_name").innerText;
     const record_name = document.getElementById("bill_record_name").value.replaceAll(input_exp, "").trim().toUpperCase();
     const paid_amt_inputs = document.getElementById("bill_paid_by").getElementsByTagName("input");
-    const share_by_inputs = document.getElementById("bill_shared_by").getElementsByTagName("input");
-    const error_el = document.getElementById("new_expense_error");
-    let total_amount = 0;
+    const equally_shared = document.getElementById("equally-shared").checked;
+    const equally_share_by_inputs = document.getElementById("equally_shared_by").getElementsByTagName("input");
+    const unequal_share_by_inputs = document.getElementById("unequal_shared_by").getElementsByTagName("input");
+    const total_members = paid_amt_inputs.length;
+
+    let total_paid_amount = 0;   // Stored in cents
+    let total_spent_amount = 0;  // Stored in cents
     let total_shared_by = 0;
-    const paid_amounts = [];
-    const shared_by = [];
-    for (let i = 0; i < paid_amt_inputs.length; i++) {
+    const paid_amounts = [];     // Stored in cents
+    const spent_amounts = [];    // Stored in cents
+
+    for (let i = 0; i < total_members; i++) {
         if (paid_amt_inputs[i].value == "") {
             paid_amt_inputs[i].value = "0";
         }
-        total_amount += Math.floor(paid_amt_inputs[i].valueAsNumber);
-        if (share_by_inputs[i].checked == true) {
-            total_shared_by++;
+        if (unequal_share_by_inputs[i].value == "") {
+            unequal_share_by_inputs[i].value = "0"; // Kept as string consistency
         }
-        paid_amounts.push(Math.floor(paid_amt_inputs[i].valueAsNumber));
-        shared_by.push(share_by_inputs[i].checked);
+
+        // Convert input dollars to clean integer cents using Math.round
+        const current_paid_cents = Math.round((paid_amt_inputs[i].valueAsNumber || 0) * 100);
+        const current_unequal_cents = Math.round((unequal_share_by_inputs[i].valueAsNumber || 0) * 100);
+
+        total_paid_amount += current_paid_cents;
+
+        if (equally_shared) {
+            if (equally_share_by_inputs[i].checked) {
+                total_shared_by++;
+            }
+            total_spent_amount += current_paid_cents;
+        } else {
+            total_spent_amount += current_unequal_cents;
+        }
+        paid_amounts.push(current_paid_cents);
     }
 
-    if (record_name == "") {
-        error_el.innerText = "Expense name is empty! or Invalid";
+    if (equally_shared) {
+        const divisor = total_shared_by || 1;
+        // Use Math.floor to get the base cents
+        const spent_by_each = Math.floor(total_paid_amount / divisor);
 
-    } else if (check_name_exists("expense_record_table", record_name)) {
-        error_el.innerText = "Expense name alreay exists!";
+        // Give everyone the base amount
+        for (let i = 0; i < total_members; i++) {
+            if (equally_share_by_inputs[i].checked) {
+                spent_amounts.push(spent_by_each);
+            } else {
+                spent_amounts.push(0);
+            }
+        }
+
+        // Calculate the exact remainder
+        let leftover_pennies = total_paid_amount % divisor;
+
+        // Find who paid to use as a starting index
+        let payer_index = paid_amounts.findIndex(amt => amt > 0);
+        if (payer_index === -1) payer_index = 0;
+
+        //Distribute the leftovers perfectly among the people sharing
+        let current_index = payer_index;
+        while (leftover_pennies > 0) {
+            if (equally_share_by_inputs[current_index].checked) {
+                spent_amounts[current_index] += 1; // Add exactly 1 penny
+                leftover_pennies--;
+            }
+            current_index = (current_index + 1) % total_members;
+        }
+
+        // This guarantees that Sum(spent_amounts) is EXACTLY EQUAL to total_paid_amount
+        total_spent_amount = total_paid_amount;
+    }else {
+        for (let i = 0; i < total_members; i++) {
+            const current_unequal_cents = Math.round((unequal_share_by_inputs[i].valueAsNumber || 0) * 100);
+            spent_amounts.push(current_unequal_cents);
+        }
+    }
+
+
+    if (record_name == "") {
+        showToast("Expense name is empty! or Invalid", "error");
+    } else if (check_record_exists("expense_record_table", record_name)) {
+        showToast("Expense name alreay exists!", "error");
+    } else if (total_paid_amount !== total_spent_amount) {
+        const amt_exceed = total_paid_amount-total_spent_amount;
+        if(amt_exceed>0){
+            showToast(`Total Spent amount is ${localFormatter.format(amt_exceed)} less than paid`, "error");
+        }else{
+            showToast(`Total Spent amount is ${localFormatter.format(-amt_exceed)} more than paid`, "error");
+        }
+
     } else {
 
-        if (total_amount == 0) {
-            error_el.innerText = "No one has paid ?";
-        } else if (total_shared_by == 0) {
-            error_el.innerText = "No one has shared ?";
+        if (total_paid_amount == 0) {
+            showToast("No one has paid ?", "error");
+        } else if (total_shared_by == 0 && equally_shared) {
+            showToast("No one has shared ?", "error");
         } else {
-            add_new_record(bill_name, record_name, paid_amounts, shared_by);
-            error_el.innerText = "";
+            add_new_record(bill_name, record_name, paid_amounts, spent_amounts,total_paid_amount);
+            //showToast("New record added")
         }
     }
 
 }
 
+function check_bill_exists(container_id, name) {
+    const rows = document.getElementById(container_id).getElementsByClassName("bill-title");
+    //console.log(rows)
+    let exists = false;
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].innerText == name) {
+            exists = true;
+
+        }
+    }
+    return exists;
+}
 //for checking if bill name or expense name already exists from the table
-function check_name_exists(table_id, name) {
+function check_record_exists(table_id, name) {
     const rows = document.getElementById(table_id).getElementsByTagName("tr");
     let exists = false;
     for (let i = 1; i < rows.length; i++) {
@@ -149,15 +233,23 @@ function check_name_exists(table_id, name) {
 }
 
 //checking the clicked option in bill table
-function check_info_table_options(e) {
+function check_bill_container_options(e) {
     if (e.target.classList.contains("view-btn")) {
         show_page("bill_view_page");
-        const bill_name = e.target.dataset.bill_name;
+        const bill_name = e.target.dataset.billName;
         update_bill_expense_page(bill_name);
     } else if (e.target.classList.contains("del-btn")) {
-        const bill_name = e.target.dataset.bill_name;
-        document.getElementById("delete_modal").style.display = "block";
-        document.getElementById("bill_delete_confirm").dataset.bill_name = bill_name;
+        const bill_name = e.target.dataset.billName;
+        document.getElementById("delete_modal").style.display = "flex";
+        document.getElementById("bill_delete_confirm").dataset.billName = bill_name;
+    }else if(e.target.classList.contains("download-btn")){
+        const bill_card_id = e.target.dataset.billCardId;
+        const bill_name = e.target.dataset.billName;
+        downloadBillImage(bill_card_id,bill_name);
+    }else if(e.target.classList.contains("whatsapp-btn")){
+        const bill_card_id = e.target.dataset.billCardId;
+        const bill_name = e.target.dataset.billName;
+        shareBillToWhatsApp(bill_card_id,bill_name);
     }
 }
 
@@ -178,7 +270,7 @@ function show_page(id) {
     for (let i = 0; i < pages.length; i++) {
         pages[i].style.display = "none";
     }
-    document.getElementById(id).style.display = "block";
+    document.getElementById(id).style.display = "grid";
 }
 
 
@@ -186,12 +278,28 @@ function show_page(id) {
 function clear_new_bill_page() {
     document.getElementById("new_bill_name").value = "";
     document.getElementById("bill_total_members").value = 2;
-    document.getElementById("new_bill_error").innerText = "";
-    document.getElementById("bill_members_inputs").innerHTML = `<ul><li>Member 1 <input type="text"></li><li>Member 2 <input type="text"></li></ul>`;
+    document.getElementById("bill_members_inputs").innerHTML = `<div class="text-input-wrapper"><label>Member 1</label><input type="text"></div><div class="text-input-wrapper"><label>Member 2</label><input type="text"></div>`;
 }
 
 //closing delete confirm modal
 function close_delete_modal() {
-    document.getElementById("bill_delete_confirm").dataset.bill_name = "";
+    document.getElementById("bill_delete_confirm").dataset.billName = "";
     document.getElementById("delete_modal").style.display = "none";
+}
+
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+
+    toast.className = `toast ${type}`;
+    toast.innerText = message;
+
+    container.appendChild(toast);
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 500); // Wait for fade-out animation
+    }, 4000);
 }

@@ -1,0 +1,36 @@
+#capture-target {
+  width: 300px;
+  padding: 20px;
+  background-color: #6200ee;
+  color: #ffffff;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Base structural setups for the action buttons */
+.download-btn, .whatsapp-btn {
+  /* display: inline-block;
+  color: #ffffff;
+  border: none; */
+  /* padding: 12px 20px; */
+  /* font-size: 15px; */
+  /* font-weight: bold; */
+  /* border-radius: 5px; */ 
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+/* Standard color identifiers */
+.download-btn {
+  background-color: #0056b3; /* Deep Blue */
+}
+
+.whatsapp-btn {
+  background-color: #25d366; /* WhatsApp Green */
+}
+
+/* Simple brightness change on mouse cursor over */
+.download-btn:hover, .whatsapp-btn:hover {
+  opacity: 0.9;
+}
