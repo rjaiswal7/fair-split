@@ -187,7 +187,7 @@ document.getElementById("new_expense_btn").onclick = () => {
     } else if (check_record_exists("expense_record_table", record_name)) {
         showToast("Expense name alreay exists!", "error");
     } else if (total_paid_amount !== total_spent_amount) {
-        const amt_exceed = (total_paid_amount/10)-(total_spent_amount/10);
+        const amt_exceed = (total_paid_amount/100)-(total_spent_amount/100);
         if(amt_exceed>0){
             showToast(`Total Spent amount is ${localFormatter.format(amt_exceed)} less than paid`, "error");
         }else{
